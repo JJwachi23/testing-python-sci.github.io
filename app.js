@@ -137,23 +137,6 @@ function renderQuestions() {
   attachQuestionInputEvents();
 }
 
-// Format Markdown-like code in questions
-function formatCode(text) {
-  if (!text) return "";
-  // Block code ```python ... ```
-  text = text.replace(/```python\n([\s\S]*?)```/g, (match, code) => {
-    return `<pre class="code-block"><code>${escapeHtml(code.trim())}</code></pre>`;
-  });
-  text = text.replace(/```([\s\S]*?)```/g, (match, code) => {
-    return `<pre class="code-block"><code>${escapeHtml(code.trim())}</code></pre>`;
-  });
-  // Inline code `code`
-  text = text.replace(/`([^`]+)`/g, '<code class="inline-code">$1</code>');
-  // Newlines to <br> for regular text
-  text = text.replace(/\n/g, "<br>");
-  return text;
-}
-
 function escapeHtml(str) {
   return String(str)
     .replace(/&/g, "&amp;")
@@ -161,6 +144,43 @@ function escapeHtml(str) {
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#039;");
+}
+
+// Format Markdown-like code in questions
+function formatCode(text) {
+  if (!text) return "";
+  const placeholders = [];
+
+  // 1. Triple-backtick code blocks
+  text = text.replace(/```(?:python)?\n?([\s\S]*?)```/g, (match, code) => {
+    const ph = "___BLOCK_CODE_" + placeholders.length + "___";
+    placeholders.push(`<pre class="code-block"><code>${escapeHtml(code.trim())}</code></pre>`);
+    return ph;
+  });
+
+  // 2. Inline code `...`
+  text = text.replace(/`([^`]+)`/g, (match, code) => {
+    const ph = "___INLINE_CODE_" + placeholders.length + "___";
+    placeholders.push(`<code class="inline-code">${escapeHtml(code)}</code>`);
+    return ph;
+  });
+
+  // 3. Escape HTML for all regular text outside code
+  text = escapeHtml(text);
+
+  // 4. Bold text **bold**
+  text = text.replace(/\*\*([^*]+)\*\*/g, "<b>$1</b>");
+
+  // 5. Newlines to <br>
+  text = text.replace(/\n/g, "<br>");
+
+  // 6. Restore code block and inline code placeholders
+  placeholders.forEach((html, i) => {
+    text = text.replace("___BLOCK_CODE_" + i + "___", html);
+    text = text.replace("___INLINE_CODE_" + i + "___", html);
+  });
+
+  return text;
 }
 
 // 4. Attach Events for Radio & Textarea
@@ -291,10 +311,10 @@ function gradeExam() {
       explainBox.style.display = "block";
       if (isCorrect) {
         explainBox.className = "explanation-box";
-        explainBox.innerHTML = `<b>✓ ถูกต้อง (+1 คะแนน):</b> ${q.explanation}`;
+        explainBox.innerHTML = `<b>✓ ถูกต้อง (+1 คะแนน):</b> ${formatCode(q.explanation)}`;
       } else {
         explainBox.className = "explanation-box wrong";
-        explainBox.innerHTML = `<b>✗ ตอบผิด (คุณเลือก ${userChoice || "ยังไม่ตอบ"} | คำตอบที่ถูกคือ ${q.answer}):</b> ${q.explanation}`;
+        explainBox.innerHTML = `<b>✗ ตอบผิด (คุณเลือก ${userChoice || "ยังไม่ตอบ"} | คำตอบที่ถูกคือ ${q.answer}):</b> ${formatCode(q.explanation)}`;
       }
     }
   });

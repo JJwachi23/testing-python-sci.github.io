@@ -336,10 +336,10 @@
       "week": 1,
       "question": "เมื่อรันโค้ดการอ่านไฟล์ด้วย Pure Python ดังนี้:\n```python\nimport csv\nwith open(\"../data/footballers.csv\") as f:\n    reader = csv.DictReader(f)\n    first_row = next(reader)\n    print(type(first_row))\n```\nผลลัพธ์ที่แสดงบนหน้าจอคือข้อใด?",
       "options": {
-        "A": "<class 'list'>",
-        "B": "<class 'dict'>",
-        "C": "<class 'pandas.core.series.Series'>",
-        "D": "<class 'tuple'>"
+        "A": "`<class 'list'>`",
+        "B": "`<class 'dict'>`",
+        "C": "`<class 'pandas.core.series.Series'>`",
+        "D": "`<class 'tuple'>`"
       },
       "answer": "B",
       "explanation": "`csv.DictReader` ทำหน้าที่อ่านข้อมูลแต่ละแถวโดยจับคู่ชื่อคอลัมน์กับค่าในแถวนั้นให้อยู่ในรูปของ Dictionary (`dict`) ซึ่งต่างจาก `csv.reader` ปกติที่จะคืนค่าเป็น `list`"
