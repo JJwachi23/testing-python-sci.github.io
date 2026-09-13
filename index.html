@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ระบบสอบวัดผล: Data Science ทีละก้าว (Week 01 - 05)</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Progress Bar Container -->
+  <div class="progress-wrapper">
+    <div class="progress-inner">
+      <span id="progress-text">ทำแล้ว 0 / 35 ข้อ (0%)</span>
+      <div class="progress-bar-bg">
+        <div class="progress-bar-fill" id="progress-fill"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Navigation Tabs -->
+  <nav class="nav-tabs-wrapper">
+    <div class="nav-tabs" id="nav-tabs"></div>
+  </nav>
+
+  <!-- Main Content Area -->
+  <main class="main-container">
+
+    <!-- Student Profile Form -->
+    <section class="student-card">
+      <div class="student-card-header">
+        <h2>👤 ข้อมูลผู้เข้าสอบ</h2>
+      </div>
+      <div class="student-form-grid">
+        <div class="input-group">
+          <label for="student-name">ชื่อ - นามสกุล <span style="color:#dc2626;">*</span></label>
+          <input type="text" id="student-name" required>
+        </div>
+      </div>
+    </section>
+
+    <!-- Part 1: Multiple Choice Questions -->
+    <section id="mc-section">
+      <div class="section-header">
+        <h2>ส่วนที่ 1: ข้อสอบเลือกตอบ A B C D (30 ข้อ 30 คะแนน)</h2>
+        <p>คลิกเลือกคำตอบที่ถูกต้องที่สุดเพียงข้อเดียวในแต่ละข้อ ระบบจะตรวจคะแนนและวิเคราะห์จุดแข็ง-จุดที่ต้องทบทวนทันทีเมื่อส่งข้อสอบ</p>
+      </div>
+      <div id="mc-questions-list"></div>
+    </section>
+
+    <!-- Part 2: Written Questions -->
+    <section id="written-section" style="margin-top: 40px;">
+      <div class="section-header">
+        <h2>ส่วนที่ 2: ข้อสอบอัตนัย / ข้อเขียน (5 ข้อ 20 คะแนน)</h2>
+        <p>เขียนโค้ด Python และอธิบายหลักคิดทางสถิติลงในกล่องข้อความ คำตอบจะถูกบันทึกส่งไปยังอาจารย์ผู้สอนเพื่อตรวจให้คะแนน</p>
+      </div>
+      <div id="written-questions-list"></div>
+    </section>
+
+    <!-- Part 3: Teacher Dashboard Section (Shown when clicking dashboard tab) -->
+    <section id="dashboard-section" style="display: none;">
+      <div class="section-header" style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 12px;">
+        <div>
+          <h2>📊 แดชบอร์ดผู้สอน (Instructor Live Dashboard)</h2>
+          <p>แสดงรายการส่งข้อสอบและคะแนนของผู้เรียนทุกคนที่บันทึกไว้ใน Supabase Database</p>
+        </div>
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <button id="btn-refresh-dashboard" class="btn btn-secondary" title="ดึงข้อมูลล่าสุดจาก Database">
+            🔄 รีเฟรชข้อมูล
+          </button>
+        </div>
+      </div>
+      <div id="dashboard-content"></div>
+    </section>
+
+    <!-- Submission Bar -->
+    <div class="submit-bar">
+      <div class="submit-stats" id="submit-stats">
+        ตอบข้อกาแล้ว 0/30 ข้อ · ตอบข้อเขียนแล้ว 0/5 ข้อ
+      </div>
+      <button id="btn-submit-exam" class="btn btn-primary btn-lg">
+        🚀 ส่งข้อสอบและบันทึกคะแนน
+      </button>
+    </div>
+
+  </main>
+
+  <!-- Result Modal -->
+  <div class="modal-backdrop" id="result-modal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>🎉 สรุปผลการสอบปรนัย</h3>
+        <button class="modal-close" id="btn-close-result">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="score-hero">
+          <div class="score-circle">
+            <span class="score-number" id="modal-score-num">0</span>
+            <span class="score-total">/ 30 คะแนน</span>
+          </div>
+          <div>
+            <span class="score-badge" id="modal-score-badge">กำลังคำนวณ...</span>
+          </div>
+        </div>
+
+        <h4 style="font-size:0.95rem; font-weight:700; margin-bottom:8px; color:#334155;">
+          คะแนนแยกรายสัปดาห์ (Week 01 - 05):
+        </h4>
+        <div class="week-score-grid" id="modal-week-grid"></div>
+
+        <div id="modal-sync-msg" style="margin-top: 18px;"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-primary" onclick="document.getElementById('result-modal').classList.remove('open')">
+          ดูเฉลยละเอียดรายข้อด้านล่าง
+        </button>
+      </div>
+    </div>
+  </div>
+
+
+
+  <!-- Student Answer Inspection Modal (For Teacher) -->
+  <div class="modal-backdrop" id="student-detail-modal">
+    <div class="modal-card" style="max-width: 860px; max-height: 90vh;">
+      <div class="modal-header">
+        <div>
+          <h3 id="detail-student-title">📋 กระดาษคำตอบของผู้เรียน</h3>
+          <p id="detail-student-subtitle" style="font-size:0.88rem; color:#64748b; margin:4px 0 0 0;"></p>
+        </div>
+        <button class="modal-close" id="btn-close-detail">&times;</button>
+      </div>
+      <div class="modal-body" id="detail-modal-body" style="overflow-y: auto; max-height: calc(90vh - 160px); padding: 20px;">
+        <!-- Dynamic content filled by app.js -->
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-primary" id="btn-close-detail-footer">
+          ปิดหน้าต่าง
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="config.js"></script>
+  <script src="questions-data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
