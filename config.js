@@ -3,14 +3,11 @@
 // ==============================================================================
 
 const SUPABASE_CONFIG = {
-  // Project URL ของ Supabase (ตั้งค่าให้เชื่อมกับโปรเจกต์ของคุณเรียบร้อยแล้ว)
+  // Project URL ของ Supabase
   url: "https://hxdrtfqxdsmqspdninqd.supabase.co",
 
-  // ⚠️ สำหรับใช้งานบน GitHub Pages:
-  // นำค่า "anon public key" จาก Supabase Dashboard (Settings -> API) มาวางในเครื่องหมายคำพูดด้านล่างนี้
-  // เช่น: anonKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-  // (หรือกดปุ่ม "⚙️ ตั้งค่า Supabase" ในหน้าเว็บก็ได้เช่นกัน)
-  anonKey: window.localStorage.getItem("supabase_anon_key") || "",
+  // Supabase API Key สำหรับใช้งานบน GitHub Pages / Static Web
+  anonKey: "sb_secret_AaOWZgIY3R4TeFoBxV8HJQ_ksT-U9Nv",
 
   // Host ของ Supabase PostgreSQL Database (เมื่อรันผ่าน server.py ในเครื่อง)
   dbHost: "db.hxdrtfqxdsmqspdninqd.supabase.co",

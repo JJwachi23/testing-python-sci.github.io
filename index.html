@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ระบบสอบวัดผล: Data Science ทีละก้าว (Week 01 - 05)</title>
+  <title>ระบบสอบวัดผล: Data Science ทีละก้าว</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -61,8 +61,8 @@
     <section id="dashboard-section" style="display: none;">
       <div class="section-header" style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 12px;">
         <div>
-          <h2>📊 แดชบอร์ดผู้สอน (Instructor Live Dashboard)</h2>
-          <p>แสดงรายการส่งข้อสอบและคะแนนของผู้เรียนทุกคนที่บันทึกไว้ใน Supabase Database</p>
+          <h2>📊 คะแนนผู้เรียน</h2>
+          <p>แสดงรายการส่งข้อสอบและคะแนนของผู้เรียนทุกคนที่บันทึกไว้ใน Database</p>
         </div>
         <div style="display: flex; align-items: center; gap: 10px;">
           <button id="btn-refresh-dashboard" class="btn btn-secondary" title="ดึงข้อมูลล่าสุดจาก Database">
@@ -104,7 +104,7 @@
         </div>
 
         <h4 style="font-size:0.95rem; font-weight:700; margin-bottom:8px; color:#334155;">
-          คะแนนแยกรายสัปดาห์ (Week 01 - 05):
+          คะแนนแยกตามส่วนเนื้อหา:
         </h4>
         <div class="week-score-grid" id="modal-week-grid"></div>
 

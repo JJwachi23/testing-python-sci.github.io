@@ -63,8 +63,7 @@ function renderTabs() {
 
   const tabs = [
     { id: "all", label: "ข้อสอบทั้งหมด (35 ข้อ)" },
-    { id: "written", label: "ข้อเขียน (5 ข้อ)" },
-    { id: "dashboard", label: "📊 แดชบอร์ดผู้สอน" }
+    { id: "dashboard", label: "📊 คะแนนผู้เรียน" }
   ];
 
   tabsContainer.innerHTML = tabs.map(tab => `
@@ -92,10 +91,9 @@ function renderQuestions() {
   // Render 30 Multiple Choice Questions
   mcContainer.innerHTML = EXAM_DATA.multiple_choice.map((q) => {
     return `
-      <article class="question-card" id="q-card-${q.id}" data-week="${q.week}" data-type="mc">
+      <article class="question-card" id="q-card-${q.id}" data-type="mc">
         <div class="question-top">
           <span class="q-badge">ข้อที่ ${q.id} / 30</span>
-          <span class="q-week">Week 0${q.week}</span>
         </div>
         <div class="question-text">${formatCode(q.question)}</div>
         <div class="options-list">
@@ -118,7 +116,7 @@ function renderQuestions() {
       <article class="question-card" id="written-card-${w.id}" data-type="written">
         <div class="question-top">
           <span class="q-badge" style="background:#fef3c7; color:#92400e;">ข้อเขียนที่ ${w.id} / 5</span>
-          <span class="q-week">คะแนนเต็ม ${w.max_points} คะแนน (Week 0${w.week})</span>
+          <span class="q-week">คะแนนเต็ม ${w.max_points} คะแนน</span>
         </div>
         <div class="question-text">${formatCode(w.prompt)}</div>
         <div style="margin-top: 12px;">
@@ -221,27 +219,14 @@ function filterQuestionsByTab() {
     return;
   }
 
-  // Restore layout for exam takers
+  // Restore layout for exam view ('all')
   if (studentCard) studentCard.style.display = "block";
   if (progressWrapper) progressWrapper.style.display = "block";
   if (submitBar) submitBar.style.display = "flex";
   if (dashboardSection) dashboardSection.style.display = "none";
-
-  if (currentTab === "all") {
-    if (mcSection) mcSection.style.display = "block";
-    if (writtenSection) writtenSection.style.display = "block";
-    document.querySelectorAll(".question-card[data-type='mc']").forEach(card => card.style.display = "block");
-  } else if (currentTab.startsWith("week")) {
-    const weekNum = currentTab.replace("week", "");
-    if (mcSection) mcSection.style.display = "block";
-    if (writtenSection) writtenSection.style.display = "none";
-    document.querySelectorAll(".question-card[data-type='mc']").forEach(card => {
-      card.style.display = card.dataset.week === weekNum ? "block" : "none";
-    });
-  } else if (currentTab === "written") {
-    if (mcSection) mcSection.style.display = "none";
-    if (writtenSection) writtenSection.style.display = "block";
-  }
+  if (mcSection) mcSection.style.display = "block";
+  if (writtenSection) writtenSection.style.display = "block";
+  document.querySelectorAll(".question-card").forEach(card => card.style.display = "block");
 
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
@@ -462,7 +447,7 @@ function showResultModal(result, syncResult) {
   if (grid) {
     grid.innerHTML = Object.entries(result.weekScores).map(([week, score], idx) => `
       <div class="week-score-box">
-        <span>Week 0${idx + 1}</span>
+        <span>ส่วนที่ ${idx + 1}</span>
         <b>${score} / 6</b>
       </div>
     `).join("");
@@ -679,7 +664,7 @@ function openStudentDetail(idx) {
     html += `
       <div class="inspection-q-card">
         <div class="inspection-q-header">
-          <span class="inspection-q-num">ข้อที่ ${q.id} (Week 0${q.week})</span>
+          <span class="inspection-q-num">ข้อที่ ${q.id}</span>
           ${isAnswered
             ? `<span class="inspection-student-tag">ผู้เรียนเลือก: ข้อ [${studentPick}]</span>`
             : `<span class="inspection-student-tag empty">ผู้เรียนไม่ได้ตอบข้อนี้</span>`}
@@ -792,61 +777,7 @@ function setupEventListeners() {
     submitBtn.addEventListener("click", handleSubmitExam);
   }
 
-  // Supabase Settings Modal
-  const configBtn = document.getElementById("btn-config-supabase");
-  const configModal = document.getElementById("config-modal");
-  const closeConfigBtn = document.getElementById("btn-close-config");
-  const saveConfigBtn = document.getElementById("btn-save-config");
-  const testConnBtn = document.getElementById("btn-test-conn");
 
-  if (configBtn && configModal) {
-    configBtn.addEventListener("click", () => {
-      document.getElementById("cfg-supabase-url").value = SUPABASE_CONFIG.url;
-      document.getElementById("cfg-supabase-key").value = SUPABASE_CONFIG.anonKey;
-      configModal.classList.add("open");
-    });
-  }
-
-  if (closeConfigBtn && configModal) {
-    closeConfigBtn.addEventListener("click", () => configModal.classList.remove("open"));
-  }
-
-  if (saveConfigBtn && configModal) {
-    saveConfigBtn.addEventListener("click", () => {
-      const url = document.getElementById("cfg-supabase-url").value;
-      const key = document.getElementById("cfg-supabase-key").value;
-      saveSupabaseConfig(url, key);
-      initSupabaseStatus();
-      configModal.classList.remove("open");
-      showToast("บันทึกการตั้งค่า Supabase เรียบร้อยแล้ว", "success");
-    });
-  }
-
-  if (testConnBtn) {
-    testConnBtn.addEventListener("click", async () => {
-      const url = document.getElementById("cfg-supabase-url").value.trim().replace(/\/$/, "");
-      const key = document.getElementById("cfg-supabase-key").value.trim();
-      if (!url || !key) {
-        showToast("กรุณากรอก Supabase URL และ Key ก่อนทดสอบ", "error");
-        return;
-      }
-      testConnBtn.innerText = "กำลังทดสอบ...";
-      try {
-        const res = await fetch(`${url}/rest/v1/${SUPABASE_CONFIG.tableName}?limit=1`, {
-          headers: { "apikey": key, "Authorization": `Bearer ${key}` }
-        });
-        if (res.ok) {
-          showToast("เชื่อมต่อ Supabase สำเร็จสมบูรณ์! 🎉", "success");
-        } else {
-          showToast(`เชื่อมต่อไม่สำเร็จ (Code ${res.status}): ตรวจสอบว่ารัน SQL schema หรือยัง`, "error");
-        }
-      } catch (err) {
-        showToast(`เชื่อมต่อล้มเหลว: ${err.message}`, "error");
-      } finally {
-        testConnBtn.innerText = "ทดสอบการเชื่อมต่อ";
-      }
-    });
-  }
 
   // Result Modal Close
   const closeResultBtn = document.getElementById("btn-close-result");
